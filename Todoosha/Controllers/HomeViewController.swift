@@ -8,11 +8,20 @@
 
 
 import UIKit
+import CoreData
 
 
 class HomeViewController: UIViewController {
     
-    var database: Database!
+    lazy var coreDataStack: CoreDataStack = CoreDataStack(modelName: "Todoosha")
+    
+    var groupFetchRequest: NSFetchRequest<Group>?
+    var groups: [Group] = []
+    
+    var ungroupedListsFetchRequest: NSFetchRequest<List>?
+    var ungroupedLists: [List] = []
+    
+    
     
     var collectionView: UICollectionView!
     var addTaskButton: UIButton!
@@ -29,8 +38,20 @@ class HomeViewController: UIViewController {
     }
     
     enum ListItem: Hashable {
+        case basic(BasicItem)
         case group(Group)
         case list(List)
+    }
+    
+    enum BasicItem: String, CaseIterable {
+        case today = "Today"
+        case income = "Income"
+        case important = "Important"
+        case planned = "Planned"
+        
+        var name: String {
+            return self.rawValue
+        }
     }
 
     //MARK: viewDidLoad
@@ -42,8 +63,10 @@ class HomeViewController: UIViewController {
         self.navigationItem.title = "Todoosha"
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: nil)
         
-        //Setting up database
-        database = Database.loadData() ?? Database.loadSampleDatabase()
+        //Setting fetch requests and do fetching from Core Data
+        setupFetchRequests()
+        performFetching()
+        
         
         //Configuring Buttons
         addTaskButton = setupButtonsWith(title: "Task")
@@ -94,6 +117,35 @@ class HomeViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         applySnapshots()
+        collectionView.reloadData()
+    }
+    
+    //MARK: Setting up fetch requests and do fetching
+    
+    func setupFetchRequests() {
+        let groupRequest: NSFetchRequest<Group> = Group.fetchRequest()
+        let groupSortDescriptor = NSSortDescriptor(key: #keyPath(Group.order), ascending: true)
+        groupRequest.sortDescriptors = [groupSortDescriptor]
+        groupFetchRequest = groupRequest
+        
+        let ungroupedListsRequest: NSFetchRequest<List> = List.fetchRequest()
+        ungroupedListsRequest.predicate = NSPredicate(format: "%K == nil", #keyPath(List.group))
+        let ungroupedListsSortDescriptor = NSSortDescriptor(key: #keyPath(List.order), ascending: true)
+        ungroupedListsRequest.sortDescriptors = [ungroupedListsSortDescriptor]
+        ungroupedListsFetchRequest = ungroupedListsRequest
+    }
+    
+    func performFetching() {
+        guard let groupFetchRequest = groupFetchRequest, let ungroupedListsFetchRequest = ungroupedListsFetchRequest else { return }
+
+        do {
+            let groupResults = try coreDataStack.managedContext.fetch(groupFetchRequest)
+            groups = groupResults
+            let ungroupedResults = try coreDataStack.managedContext.fetch(ungroupedListsFetchRequest)
+            ungroupedLists = ungroupedResults
+        }catch let error as NSError {
+            print("Unable to fetch \(error), \(error.userInfo)")
+        }
     }
     
     //MARK: Setting up subviews
@@ -109,9 +161,7 @@ class HomeViewController: UIViewController {
         let layout = UICollectionViewCompositionalLayout.list(using: layoutConfig)
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
         collectionView.delegate = self
-        collectionView.dragDelegate = self
-        collectionView.dragInteractionEnabled = true
-        collectionView.dropDelegate = self
+        
     }
     
     //MARK: Setup swipe delete action for list rows
@@ -132,18 +182,19 @@ class HomeViewController: UIViewController {
                         switch (groupItem, listItem) {
                             case (.group(let group), .list(let list)):
                                 //search for index of our list in group and delete it
-                                if let listIndex = group.subitems.firstIndex(of: list) {
-                                    group.subitems.remove(at: listIndex)
-                                }
+                                group.removeFromLists(list)
+                                self.coreDataStack.managedContext.delete(list)
                             default:
                                 break
                         }
                     //If section is ungroupedLists - simply delete list from data base
                     case 2:
-                        self.database.userUngroupedLists.remove(at: indexPath.row)
+                        let list = self.ungroupedLists.remove(at: indexPath.row)
+                        self.coreDataStack.managedContext.delete(list)
                     default:
                         break
                 }
+                self.coreDataStack.saveContext()
                 self.applySnapshots()
             }
             
@@ -169,11 +220,31 @@ class HomeViewController: UIViewController {
     
     //MARK: Create collection view cell registration and data source
     
+    func createBasicListCellRegistration() -> UICollectionView.CellRegistration<UICollectionViewListCell, BasicItem> {
+        let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, BasicItem> { (cell, indexPath, basicItem) in
+            var content = cell.defaultContentConfiguration()
+            content.text = basicItem.name
+            
+            switch basicItem {
+                case .today:
+                    content.image = UIImage(systemName: "sun.max")
+                case .income:
+                    content.image = UIImage(systemName: "envelope.open")
+                case .important:
+                    content.image = UIImage(systemName: "star")
+                case .planned:
+                    content.image = UIImage(systemName: "calendar")
+            }
+            cell.contentConfiguration = content
+        }
+        return cellRegistration
+    }
+    
     func createGroupCellRegistration() -> UICollectionView.CellRegistration<UICollectionViewListCell, Group> {
         let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Group> { (cell, indexPath, groupItem) in
             
             var content = cell.defaultContentConfiguration()
-            content.text = groupItem.title
+            content.text = groupItem.name
             content.image = UIImage(systemName: "folder")
             cell.contentConfiguration = content
             
@@ -187,35 +258,24 @@ class HomeViewController: UIViewController {
     func createListCellRegistration() -> UICollectionView.CellRegistration<UICollectionViewListCell, List> {
         let cellRegistraion = UICollectionView.CellRegistration<UICollectionViewListCell, List> { (cell, indexPath, listItem) in
             var content = cell.defaultContentConfiguration()
-            content.text = listItem.title
-            
-            if indexPath.section == 0 {
-                switch indexPath.item {
-                    case 0:
-                        content.image = UIImage(systemName: "sun.max")
-                    case 1:
-                        content.image = UIImage(systemName: "envelope.open")
-                    case 2:
-                        content.image = UIImage(systemName: "star")
-                    case 3:
-                        content.image = UIImage(systemName: "calendar")
-                    default:
-                        break
-                }
-            } else {
-                content.image = UIImage(systemName: "list.bullet")
-            }
+            content.text = listItem.name
+            content.image = UIImage(systemName: "list.bullet")
+            cell.contentConfiguration = content
             cell.contentConfiguration = content
         }
         return cellRegistraion
     }
     
     func setupDataSource() {
+        let basicCellRegistration = createBasicListCellRegistration()
         let groupCellRegistration = createGroupCellRegistration()
         let listCellRegistration = createListCellRegistration()
         
         dataSource = UICollectionViewDiffableDataSource<Section, ListItem>(collectionView: collectionView, cellProvider: { collectionView, indexPath, listItem in
             switch listItem {
+                case .basic(let basicItem):
+                    let cell = collectionView.dequeueConfiguredReusableCell(using: basicCellRegistration, for: indexPath, item: basicItem)
+                    return cell
                 case .group(let group):
                     let cell = collectionView.dequeueConfiguredReusableCell(using: groupCellRegistration, for: indexPath, item: group)
                     return cell
@@ -236,7 +296,7 @@ class HomeViewController: UIViewController {
         }
         
         dataSource.reorderingHandlers.didReorder = {[weak self] transaction in
-            guard let self = self else {return}
+            //guard let self = self else {return}
         }
          
     }
@@ -250,7 +310,7 @@ class HomeViewController: UIViewController {
         
         //Basic section snapshot
         var basicListsSectionSnapshot = NSDiffableDataSourceSectionSnapshot<ListItem>()
-        let basicListItems = database.basicLists.map { ListItem.list($0) }
+        let basicListItems = BasicItem.allCases.map { ListItem.basic($0) }
         
         basicListsSectionSnapshot.append(basicListItems)
         dataSource.apply(basicListsSectionSnapshot, to: .basicLists)
@@ -258,18 +318,17 @@ class HomeViewController: UIViewController {
         //Grouped section snapshot
         var userGroupsSectionSnaphot = NSDiffableDataSourceSectionSnapshot<ListItem>()
         var groupItemsToExpand = [ListItem]()
-        for groupItem in database.userGroups {
+        for groupItem in groups {
             let groupListItem = ListItem.group(groupItem)
             userGroupsSectionSnaphot.append([groupListItem])
             
             if groupItem.isExpanded {
                 groupItemsToExpand.append(groupListItem)
             }
-                
-            let listItems = groupItem.subitems.map { ListItem.list($0) }
-                
-            userGroupsSectionSnaphot.append(listItems, to: groupListItem)
+            if let listItems = groupItem.lists?.array.map({ ListItem.list($0 as! List) }) {
+                userGroupsSectionSnaphot.append(listItems, to: groupListItem)
             }
+        }
         userGroupsSectionSnaphot.expand(groupItemsToExpand)
 
         dataSource.apply(userGroupsSectionSnaphot, to: .groupedLists)
@@ -277,7 +336,7 @@ class HomeViewController: UIViewController {
         //Ungrouped section snapshot
         var ungroupedListsSectionSnapshot = NSDiffableDataSourceSectionSnapshot<ListItem>()
         
-        let ungroupedListItems = database.userUngroupedLists.map { ListItem.list($0) }
+        let ungroupedListItems = ungroupedLists.map { ListItem.list($0) }
         ungroupedListsSectionSnapshot.append(ungroupedListItems)
         
         dataSource.apply(ungroupedListsSectionSnapshot, to: .ungroupedLists)
@@ -292,7 +351,7 @@ extension HomeViewController: UICollectionViewDelegate {
         
         switch item {
             case .list(let list):
-                self.navigationController?.pushViewController(ListDetailViewController(list: list), animated: true)
+                self.navigationController?.pushViewController(ListDetailViewController(list: list, coreDataStack: coreDataStack), animated: true)
             default:
                 return
         }
@@ -304,10 +363,13 @@ extension HomeViewController: UICollectionViewDelegate {
         switch item {
             case .group(let group):
                 group.isExpanded.toggle()
+                coreDataStack.saveContext()
             default:
                 return
         }
+     
     }
+     
     //========================================РАЗОБРАТЬСЯ!!!!
 
     func collectionView(_ collectionView: UICollectionView, targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath, atCurrentIndexPath currentIndexPath: IndexPath, toProposedIndexPath proposedIndexPath: IndexPath) -> IndexPath {
@@ -321,15 +383,18 @@ extension HomeViewController: UICollectionViewDelegate {
 extension HomeViewController {
     @objc func addTaskButtonTapped() {
         let taskBottomSheetController = AddTaskBottomSheetViewController()
-        taskBottomSheetController.delegate = self
+        //taskBottomSheetController.delegate = self
         taskBottomSheetController.modalPresentationStyle = .overCurrentContext
         self.present(taskBottomSheetController, animated: false)
     }
     
     @objc func addListButtonTapped() {
-        let newList = List(title: "New list")
-        database.userUngroupedLists.append(newList)
-        self.navigationController?.pushViewController(ListDetailViewController(list: newList), animated: true)
+        let newList = List(context: coreDataStack.managedContext)
+        newList.name = "New List"
+        newList.order = Int32(ungroupedLists.count)
+        ungroupedLists.append(newList)
+        coreDataStack.saveContext()
+        self.navigationController?.pushViewController(ListDetailViewController(list: newList, coreDataStack: coreDataStack), animated: true)
     }
     
     @objc func addGroupButtonTapped() {
@@ -342,8 +407,12 @@ extension HomeViewController {
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         let createAction = UIAlertAction(title: "Create", style: .default) { _ in
-            let groupTitle = alert.textFields![0].text!.isEmpty ? "New Group" : alert.textFields![0].text!
-            self.database.addGroup(title: groupTitle)
+            let groupName = alert.textFields![0].text!.isEmpty ? "New Group" : alert.textFields![0].text!
+            let group = Group(context: self.coreDataStack.managedContext)
+            group.name = groupName
+            group.order = Int32(self.groups.count)
+            self.groups.append(group)
+            self.coreDataStack.saveContext()
             self.applySnapshots()
         }
         
@@ -362,6 +431,7 @@ extension HomeViewController {
     }
 }
 
+/*
 extension HomeViewController: AddTaskBottomSheetDelegate {
     func saveTask(_ task: Task) {
         database.basicLists[1].uncompletedTasks.append(task)
@@ -370,23 +440,6 @@ extension HomeViewController: AddTaskBottomSheetDelegate {
     
     
 }
-//========================================РАЗОБРАТЬСЯ!!!!
+ */
 
-extension HomeViewController: UICollectionViewDragDelegate {
-    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let dragItem = UIDragItem(itemProvider: NSItemProvider())
-        dragItem.localObject = dataSource.itemIdentifier(for:indexPath)
-        return [dragItem]
-    }
-}
-
-extension HomeViewController: UICollectionViewDropDelegate {
-    func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
-        
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
-        return true
-    }
-}
 

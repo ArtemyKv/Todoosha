@@ -88,7 +88,7 @@ class SubtaskTableViewCell: UITableViewCell {
     }
     
     func update(with subtask: Subtask) {
-        let attributedString = NSMutableAttributedString(string: subtask.name)
+        let attributedString = NSMutableAttributedString(string: subtask.wrappedName)
         let attributeRange = NSRange(location: 0, length: attributedString.length)
         if subtask.isComplete {
             completeButton.configuration?.image = UIImage(systemName: "checkmark.diamond", withConfiguration: buttonSymbolConfig)

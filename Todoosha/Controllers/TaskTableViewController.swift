@@ -17,6 +17,8 @@ class TaskTableViewController: UITableViewController {
     var task: Task!
     
     var subtaskDataSource: SubtaskTableViewDataSource!
+    
+    var coreDataStack: CoreDataStack!
 
     weak var delegate: TaskTableViewControllerDelegate?
     
@@ -65,8 +67,9 @@ class TaskTableViewController: UITableViewController {
     //MARK: ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
-        subtaskDataSource = SubtaskTableViewDataSource(items: task.subtasks)
+        subtaskDataSource = SubtaskTableViewDataSource(subtasks: task.subtasks)
         subtaskDataSource.cellDelegate = self
+        subtaskDataSource.delegate = self
         subtasksTableView.dataSource = subtaskDataSource
         subtasksTableView.delegate = subtaskDataSource
         subtasksTableView.dragDelegate = subtaskDataSource
@@ -83,7 +86,6 @@ class TaskTableViewController: UITableViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        task.subtasks = subtaskDataSource.items
         delegate?.updateTaskWith(task: task)
     }
     
@@ -126,12 +128,13 @@ class TaskTableViewController: UITableViewController {
     //Subtasks section
     @IBAction func textFieldDoneButtonPressed(_ sender: UITextField) {
         if let subtaskName = sender.text, !subtaskName.isEmpty {
-            let subtask = Subtask(name: subtaskName)
-            task.subtasks.append(subtask)
+            let subtask = Subtask(context: coreDataStack.managedContext)
+            subtask.name = subtaskName
+            task.addToSubtasks(subtask)
             updateSubtaskTableView()
             sender.text = ""
             sender.resignFirstResponder()
-         
+            coreDataStack.saveContext()
         }
     }
     
@@ -160,7 +163,7 @@ class TaskTableViewController: UITableViewController {
         let defaultHeight = CGFloat(44)
         switch indexPath {
             case subtaskTableViewIndexPath:
-                return CGFloat(task.subtasks.count) * defaultHeight
+                return CGFloat(task.subtasks?.count ?? 0) * defaultHeight
             case notesIndexPath:
                 return 200
             case nameCellIndexPath:
@@ -183,14 +186,21 @@ class TaskTableViewController: UITableViewController {
         isImportantButton.isSelected = task.isImportant
         notesTextView.text = task.notes
         
+        coreDataStack.saveContext()
+        
         
         //Creation(completion) toolbar text
         let prefix = task.isComplete ? "Completed" : "Created"
-        creationDateButton.title = prefix + " " + task.creationDate.formatted(date: .abbreviated, time: .shortened)
+        let dateToDisplay = task.isComplete ? task.completionDate : task.creationDate
+        
+        if let dateToDisplay = dateToDisplay {
+            creationDateButton.title = prefix + " " + dateToDisplay.formatted(date: .abbreviated, time: .shortened)
+        } else {
+            creationDateButton.title = ""
+        }
     }
     
     func updateSubtaskTableView() {
-        subtaskDataSource.items = task.subtasks
         subtasksTableView.reloadData()
         tableView.beginUpdates()
         tableView.endUpdates()
@@ -220,22 +230,29 @@ class TaskTableViewController: UITableViewController {
 extension TaskTableViewController: SubtaskTableViewCellDelegate {
     func textFieldEditingFinished(sender: UITableViewCell) {
         guard let indexPath = subtasksTableView.indexPath(for: sender),
-              let cell = sender as? SubtaskTableViewCell else { return }
-        task.subtasks[indexPath.row].name = cell.titleTextField.text!
+              let subtask = task.subtasks?[indexPath.row] as? Subtask,
+              let cell = sender as? SubtaskTableViewCell
+        else { return }
+        subtask.name = cell.titleTextField.text!
         updateSubtaskTableView()
+        coreDataStack.saveContext()
     }
     
     
     func checkmarkTapped(sender: UITableViewCell) {
-        guard let indexPath = subtasksTableView.indexPath(for: sender) else { return }
-        task.subtasks[indexPath.row].isComplete.toggle()
+        guard let indexPath = subtasksTableView.indexPath(for: sender),
+              let subtask = task.subtasks?[indexPath.row] as? Subtask
+        else { return }
+        subtask.isComplete.toggle()
         updateSubtaskTableView()
+        coreDataStack.saveContext()
     }
     
     func xmarkTapped(sender: UITableViewCell) {
         guard let indexPath = subtasksTableView.indexPath(for: sender) else { return }
-        task.subtasks.remove(at: indexPath.row)
+        task.removeFromSubtasks(at: indexPath.row)
         updateSubtaskTableView()
+        coreDataStack.saveContext()
     }
     
     
@@ -247,5 +264,14 @@ extension TaskTableViewController: UITextViewDelegate {
         task.notes = notesTextView.text
         tableView.beginUpdates()
         tableView.endUpdates()
+        coreDataStack.saveContext()
     }
+}
+
+extension TaskTableViewController: SubtaskTableViewDataSourceDelegate {
+    func reorderingFinished() {
+        coreDataStack.saveContext()
+    }
+    
+    
 }

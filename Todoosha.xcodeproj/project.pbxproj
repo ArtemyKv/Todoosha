@@ -11,11 +11,6 @@
 		9C12D964283E703B00B00972 /* SubtaskTableViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12D963283E703B00B00972 /* SubtaskTableViewDataSource.swift */; };
 		9C12D966283E83C600B00972 /* SubtaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12D965283E83C600B00972 /* SubtaskTableViewCell.swift */; };
 		9C12D98A28446ED700B00972 /* AddTaskBottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C12D98928446ED700B00972 /* AddTaskBottomSheetViewController.swift */; };
-		9C1B96FF286C007B00A15CEF /* Subtask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1B96FA286C007B00A15CEF /* Subtask.swift */; };
-		9C1B9700286C007B00A15CEF /* List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1B96FB286C007B00A15CEF /* List.swift */; };
-		9C1B9701286C007B00A15CEF /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1B96FC286C007B00A15CEF /* Database.swift */; };
-		9C1B9702286C007B00A15CEF /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1B96FD286C007B00A15CEF /* Group.swift */; };
-		9C1B9703286C007B00A15CEF /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1B96FE286C007B00A15CEF /* Task.swift */; };
 		9C2CA439282694E700BA46FF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2CA438282694E700BA46FF /* AppDelegate.swift */; };
 		9C2CA43B282694E700BA46FF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2CA43A282694E700BA46FF /* SceneDelegate.swift */; };
 		9C2CA442282694E800BA46FF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C2CA441282694E800BA46FF /* Assets.xcassets */; };
@@ -27,6 +22,16 @@
 		9C57822B2835340200332F2B /* TaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C57822A2835340200332F2B /* TaskTableViewCell.swift */; };
 		9C57822D2837237500332F2B /* ListDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C57822C2837237500332F2B /* ListDetailHeaderView.swift */; };
 		9CC07726282CAF0D00AFB8A2 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC07725282CAF0D00AFB8A2 /* HomeViewController.swift */; };
+		9CC7FCC2287E6080001A483D /* Todoosha.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC0287E6080001A483D /* Todoosha.xcdatamodeld */; };
+		9CC7FCCB287E6141001A483D /* Task+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC3287E6141001A483D /* Task+CoreDataClass.swift */; };
+		9CC7FCCC287E6141001A483D /* Task+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC4287E6141001A483D /* Task+CoreDataProperties.swift */; };
+		9CC7FCCD287E6141001A483D /* Group+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC5287E6141001A483D /* Group+CoreDataClass.swift */; };
+		9CC7FCCE287E6141001A483D /* Group+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC6287E6141001A483D /* Group+CoreDataProperties.swift */; };
+		9CC7FCCF287E6141001A483D /* List+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC7287E6141001A483D /* List+CoreDataClass.swift */; };
+		9CC7FCD0287E6141001A483D /* List+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC8287E6141001A483D /* List+CoreDataProperties.swift */; };
+		9CC7FCD1287E6141001A483D /* Subtask+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCC9287E6141001A483D /* Subtask+CoreDataClass.swift */; };
+		9CC7FCD2287E6141001A483D /* Subtask+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCCA287E6141001A483D /* Subtask+CoreDataProperties.swift */; };
+		9CC7FCD4287E79C5001A483D /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC7FCD3287E79C5001A483D /* CoreDataStack.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,11 +39,6 @@
 		9C12D963283E703B00B00972 /* SubtaskTableViewDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtaskTableViewDataSource.swift; sourceTree = "<group>"; };
 		9C12D965283E83C600B00972 /* SubtaskTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubtaskTableViewCell.swift; sourceTree = "<group>"; };
 		9C12D98928446ED700B00972 /* AddTaskBottomSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskBottomSheetViewController.swift; sourceTree = "<group>"; };
-		9C1B96FA286C007B00A15CEF /* Subtask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subtask.swift; sourceTree = "<group>"; };
-		9C1B96FB286C007B00A15CEF /* List.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = List.swift; sourceTree = "<group>"; };
-		9C1B96FC286C007B00A15CEF /* Database.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
-		9C1B96FD286C007B00A15CEF /* Group.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
-		9C1B96FE286C007B00A15CEF /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		9C2CA435282694E700BA46FF /* Todoosha.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todoosha.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C2CA438282694E700BA46FF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9C2CA43A282694E700BA46FF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -52,6 +52,17 @@
 		9C57822A2835340200332F2B /* TaskTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskTableViewCell.swift; sourceTree = "<group>"; };
 		9C57822C2837237500332F2B /* ListDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailHeaderView.swift; sourceTree = "<group>"; };
 		9CC07725282CAF0D00AFB8A2 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		9CC7FCC1287E6080001A483D /* Todoosha.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Todoosha.xcdatamodel; sourceTree = "<group>"; };
+		9CC7FCC3287E6141001A483D /* Task+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+CoreDataClass.swift"; sourceTree = "<group>"; };
+		9CC7FCC4287E6141001A483D /* Task+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		9CC7FCC5287E6141001A483D /* Group+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Group+CoreDataClass.swift"; sourceTree = "<group>"; };
+		9CC7FCC6287E6141001A483D /* Group+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Group+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		9CC7FCC7287E6141001A483D /* List+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "List+CoreDataClass.swift"; sourceTree = "<group>"; };
+		9CC7FCC8287E6141001A483D /* List+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "List+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		9CC7FCC9287E6141001A483D /* Subtask+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Subtask+CoreDataClass.swift"; sourceTree = "<group>"; };
+		9CC7FCCA287E6141001A483D /* Subtask+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Subtask+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		9CC7FCD3287E79C5001A483D /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
+		9CC7FCD5287E8A5E001A483D /* Todoosha_v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Todoosha_v2.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,11 +79,14 @@
 		9C1B96F9286C007B00A15CEF /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				9C1B96FA286C007B00A15CEF /* Subtask.swift */,
-				9C1B96FB286C007B00A15CEF /* List.swift */,
-				9C1B96FC286C007B00A15CEF /* Database.swift */,
-				9C1B96FD286C007B00A15CEF /* Group.swift */,
-				9C1B96FE286C007B00A15CEF /* Task.swift */,
+				9CC7FCC3287E6141001A483D /* Task+CoreDataClass.swift */,
+				9CC7FCC4287E6141001A483D /* Task+CoreDataProperties.swift */,
+				9CC7FCC5287E6141001A483D /* Group+CoreDataClass.swift */,
+				9CC7FCC6287E6141001A483D /* Group+CoreDataProperties.swift */,
+				9CC7FCC7287E6141001A483D /* List+CoreDataClass.swift */,
+				9CC7FCC8287E6141001A483D /* List+CoreDataProperties.swift */,
+				9CC7FCC9287E6141001A483D /* Subtask+CoreDataClass.swift */,
+				9CC7FCCA287E6141001A483D /* Subtask+CoreDataProperties.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -105,6 +119,7 @@
 				9C377562283C6BEE008B4E1C /* Storyboards */,
 				9C2CA441282694E800BA46FF /* Assets.xcassets */,
 				9C2CA446282694E800BA46FF /* Info.plist */,
+				9CC7FCC0287E6080001A483D /* Todoosha.xcdatamodeld */,
 			);
 			path = Todoosha;
 			sourceTree = "<group>";
@@ -150,6 +165,7 @@
 			isa = PBXGroup;
 			children = (
 				9CC07725282CAF0D00AFB8A2 /* HomeViewController.swift */,
+				9CC7FCD3287E79C5001A483D /* CoreDataStack.swift */,
 				9C5782242833274200332F2B /* ListDetailViewController.swift */,
 				9C12D961283DB46200B00972 /* TaskTableViewController.swift */,
 				9C12D98928446ED700B00972 /* AddTaskBottomSheetViewController.swift */,
@@ -230,21 +246,26 @@
 			files = (
 				9C5782252833274200332F2B /* ListDetailViewController.swift in Sources */,
 				9C2CA439282694E700BA46FF /* AppDelegate.swift in Sources */,
+				9CC7FCD2287E6141001A483D /* Subtask+CoreDataProperties.swift in Sources */,
 				9C12D98A28446ED700B00972 /* AddTaskBottomSheetViewController.swift in Sources */,
-				9C1B9702286C007B00A15CEF /* Group.swift in Sources */,
-				9C1B9701286C007B00A15CEF /* Database.swift in Sources */,
+				9CC7FCD1287E6141001A483D /* Subtask+CoreDataClass.swift in Sources */,
+				9CC7FCC2287E6080001A483D /* Todoosha.xcdatamodeld in Sources */,
 				9C12D966283E83C600B00972 /* SubtaskTableViewCell.swift in Sources */,
+				9CC7FCD0287E6141001A483D /* List+CoreDataProperties.swift in Sources */,
+				9CC7FCCF287E6141001A483D /* List+CoreDataClass.swift in Sources */,
 				9C5782292834879200332F2B /* ListDetailView.swift in Sources */,
-				9C1B96FF286C007B00A15CEF /* Subtask.swift in Sources */,
+				9CC7FCCB287E6141001A483D /* Task+CoreDataClass.swift in Sources */,
+				9CC7FCCD287E6141001A483D /* Group+CoreDataClass.swift in Sources */,
 				9C2CA43B282694E700BA46FF /* SceneDelegate.swift in Sources */,
 				9C12D964283E703B00B00972 /* SubtaskTableViewDataSource.swift in Sources */,
 				9C57822D2837237500332F2B /* ListDetailHeaderView.swift in Sources */,
-				9C1B9700286C007B00A15CEF /* List.swift in Sources */,
 				9C57822B2835340200332F2B /* TaskTableViewCell.swift in Sources */,
 				9C57822728334EB900332F2B /* AddTaskToolbarView.swift in Sources */,
+				9CC7FCD4287E79C5001A483D /* CoreDataStack.swift in Sources */,
 				9C12D962283DB46200B00972 /* TaskTableViewController.swift in Sources */,
-				9C1B9703286C007B00A15CEF /* Task.swift in Sources */,
+				9CC7FCCC287E6141001A483D /* Task+CoreDataProperties.swift in Sources */,
 				9CC07726282CAF0D00AFB8A2 /* HomeViewController.swift in Sources */,
+				9CC7FCCE287E6141001A483D /* Group+CoreDataProperties.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -454,6 +475,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		9CC7FCC0287E6080001A483D /* Todoosha.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				9CC7FCD5287E8A5E001A483D /* Todoosha_v2.xcdatamodel */,
+				9CC7FCC1287E6080001A483D /* Todoosha.xcdatamodel */,
+			);
+			currentVersion = 9CC7FCD5287E8A5E001A483D /* Todoosha_v2.xcdatamodel */;
+			path = Todoosha.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 9C2CA42D282694E700BA46FF /* Project object */;
 }

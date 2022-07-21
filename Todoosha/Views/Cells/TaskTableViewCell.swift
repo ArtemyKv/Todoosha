@@ -65,7 +65,7 @@ class TaskTableViewCell: UITableViewCell {
     }
     
     func update(with task: Task) {
-        let attributedString = NSMutableAttributedString(string: task.name)
+        let attributedString = NSMutableAttributedString(string: task.wrappedName)
         let attributeRange = NSRange(location: 0, length: attributedString.length)
         if task.isComplete {
             completeButton.configuration?.image = UIImage(systemName: "checkmark.diamond")

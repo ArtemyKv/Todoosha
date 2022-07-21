@@ -11,8 +11,11 @@ class ListDetailViewController: UIViewController {
     
     var list: List!
     
-    init(list: List) {
+    var coreDataStack: CoreDataStack!
+    
+    init(list: List, coreDataStack: CoreDataStack) {
         self.list = list
+        self.coreDataStack = coreDataStack
         super .init(nibName: nil, bundle: nil)
     }
     
@@ -57,23 +60,19 @@ class ListDetailViewController: UIViewController {
         view = ListDetailView()
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Rename", style: .plain, target: self, action: #selector(editBarButtonPressed))
-        if list == nil {
-            list = List(title: "New list")
-        }
-        navigationItem.title = list.title
-        
-
+        navigationItem.title = list.name
         
         tableView.delegate = self
         tableView.dataSource = self
         //navigationController?.delegate = self
         
+        configureTasksBySections()
+        
         tableView.register(TaskTableViewCell.self, forCellReuseIdentifier: TaskTableViewCell.identifier)
         tableView.register(ListDetailHeaderView.self, forHeaderFooterViewReuseIdentifier: ListDetailHeaderView.identifier)
-        tasksBySections = [
-            Section(type: .current, tasks: list.uncompletedTasks),
-            Section(type: .completed, tasks: list.completedTasks)
-        ]
+        
+        
+        
         
         listDetailView.addTaskButton.addTarget(self, action: #selector(addTaskButtonPressed), for: .touchUpInside)
         
@@ -83,52 +82,24 @@ class ListDetailViewController: UIViewController {
         
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        list.uncompletedTasks = tasksBySections[0].tasks
-        list.completedTasks = tasksBySections[1].tasks
-    }
-    
-    
-
-
-/*
-    func configureAccessoryView() -> UIView {
-        let view = UIView()
-        view.bounds = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 100)
-        view.backgroundColor = .secondarySystemBackground
+    func configureTasksBySections() {
+        let tasks: [Task] = (list.tasks?.array as? [Task]) ?? []
         
-        let textField = UITextField()
-        textField.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
-        textField.borderStyle = .roundedRect
-        view.addSubview(textField)
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            textField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            textField.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
-        return view
-    }
-*/
-    
-    /*
-    func configureToolbar() -> UIToolbar {
-        let toolBar = UIToolbar()
-        toolBar.sizeToFit()
+        var currentTasks = tasks.filter { !$0.isComplete }
+        currentTasks.sort { $0.order < $1.order }
+        var completedTasks = tasks.filter { $0.isComplete }
+        //Handle optinal completionDate!! Now useing force unwrapping which is not really good
+        completedTasks.sort { $0.completionDate! < $1.completionDate! }
         
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonPressed))
-        toolBar.items = [flexibleSpace, doneButton]
-        return toolBar
+        tasksBySections = [
+            Section(type: .current, tasks: currentTasks),
+            Section(type: .completed, tasks: completedTasks)
+        ]
     }
     
-    @objc func doneButtonPressed() {
-        textField.resignFirstResponder()
-    }
-    */
     
     func updateView() {
-        navigationItem.title = list.title
+        navigationItem.title = list.name
     }
     
     //Presents alert when changing list name or after creating new list
@@ -136,12 +107,13 @@ class ListDetailViewController: UIViewController {
         let alert = UIAlertController(title: "New list name", message: nil, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         let okAction = UIAlertAction(title: "Accept", style: .default) { _ in
-            self.list.title = alert.textFields![0].text ?? ""
+            self.list.name = alert.textFields![0].text ?? ""
+            self.coreDataStack.saveContext()
             self.updateView()
         }
         alert.addTextField { textField in
             textField.placeholder = "Enter Name"
-            textField.text = self.list.title
+            textField.text = self.list.name
         }
         //Enabling and disabling Aceept button if name is empty
         NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: alert.textFields?[0], queue: OperationQueue.main) { _ in
@@ -170,6 +142,7 @@ class ListDetailViewController: UIViewController {
         let addTaskBottomSheetController = AddTaskBottomSheetViewController()
         addTaskBottomSheetController.modalPresentationStyle = .overCurrentContext
         addTaskBottomSheetController.delegate = self
+        addTaskBottomSheetController.coreDataStack = coreDataStack
         self.present(addTaskBottomSheetController, animated: false)
     }
 }
@@ -247,7 +220,9 @@ extension ListDetailViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            tasksBySections[indexPath.section].tasks.remove(at: indexPath.row)
+            let removedTask = tasksBySections[indexPath.section].tasks.remove(at: indexPath.row)
+            coreDataStack.managedContext.delete(removedTask)
+            coreDataStack.saveContext()
             tableView.deleteRows(at: [indexPath], with: .automatic)
             //Animation works incorrectly
         }
@@ -264,6 +239,10 @@ extension ListDetailViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
         let task = tasksBySections[sourceIndexPath.section].tasks.remove(at: sourceIndexPath.row)
         tasksBySections[destinationIndexPath.section].tasks.insert(task, at: destinationIndexPath.row)
+        
+        for (index, task) in tasksBySections[destinationIndexPath.section].tasks.enumerated() {
+            task.order = Int32(index)
+        }
     }
 }
 
@@ -275,10 +254,18 @@ extension ListDetailViewController: TaskTableViewCellDelegate {
             let task = tasksBySections[currentIndexPath.section].tasks[currentIndexPath.row]
             let targetSectionNumber = currentIndexPath.section == 0 ? 1: 0
             let targetSection = tasksBySections[targetSectionNumber]
-            let targetRowNumber = tasksBySections[targetSectionNumber].tasks.count
+            let targetRowNumber = targetSection.tasks.count
             let newIndexPath = IndexPath(item: targetRowNumber, section: targetSectionNumber)
             
             task.isComplete.toggle()
+            if task.isComplete {
+                task.completionDate = Date()
+                task.order = 0
+            } else if !task.isComplete {
+                task.completionDate = nil
+                task.order = Int32(targetSection.tasks.count)
+            }
+            coreDataStack.saveContext()
             
             tasksBySections[currentIndexPath.section].tasks.remove(at: currentIndexPath.row)
             tasksBySections[targetSectionNumber].tasks.append(task)
@@ -344,6 +331,7 @@ extension ListDetailViewController {
         let taskNavigationController = storyboard.instantiateViewController(withIdentifier: "TaskNavigationController") as! UINavigationController
         let taskViewController = taskNavigationController.viewControllers[0] as! TaskTableViewController
         taskViewController.task = task
+        taskViewController.coreDataStack = coreDataStack
         taskViewController.delegate = self
         self.present(taskNavigationController, animated: true)
 
@@ -353,6 +341,7 @@ extension ListDetailViewController {
 
 extension ListDetailViewController: TaskTableViewControllerDelegate {
     func updateTaskWith(task: Task) {
+        configureTasksBySections()
         tableView.reloadData()
     }
 }
@@ -360,6 +349,11 @@ extension ListDetailViewController: TaskTableViewControllerDelegate {
 extension ListDetailViewController: AddTaskBottomSheetDelegate {
     func saveTask(_ task: Task) {
         let sectionNumber = task.isComplete ? 1 : 0
+        
+        task.order = task.isComplete ? 0 : Int32(tasksBySections[sectionNumber].tasks.count)
+        list.addToTasks(task)
+        coreDataStack.saveContext()
+        
         tasksBySections[sectionNumber].tasks.append(task)
         tableView.reloadData()
     }

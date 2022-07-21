@@ -8,22 +8,23 @@
 import Foundation
 import UIKit
 
-protocol SubtaskTableViewDataSourceDelegate {
-    
+protocol SubtaskTableViewDataSourceDelegate: AnyObject {
+    func reorderingFinished()
 }
 
 class SubtaskTableViewDataSource : NSObject, UITableViewDelegate, UITableViewDataSource {
     
-    weak var cellDelegate: SubtaskTableViewCellDelegate!
+    weak var cellDelegate: SubtaskTableViewCellDelegate?
+    weak var delegate: SubtaskTableViewDataSourceDelegate?
     
-    var items: [Subtask]
+    var subtasks: NSOrderedSet?
     
-    init(items: [Subtask]) {
-        self.items = items
+    init(subtasks: NSOrderedSet?) {
+        self.subtasks = subtasks
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return items.count
+        return subtasks?.count ?? 0
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -32,7 +33,7 @@ class SubtaskTableViewDataSource : NSObject, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: SubtaskTableViewCell.identifier, for: indexPath) as! SubtaskTableViewCell
-        let subtask = items[indexPath.row]
+        let subtask = subtasks![indexPath.row] as! Subtask
         cell.update(with: subtask)
         cell.delegate = cellDelegate
         return cell
@@ -43,15 +44,20 @@ class SubtaskTableViewDataSource : NSObject, UITableViewDelegate, UITableViewDat
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let subtask = items.remove(at: sourceIndexPath.row)
-        items.insert(subtask, at: destinationIndexPath.row)
+        guard let subtasks = subtasks,
+              let replacedSubtask = subtasks[sourceIndexPath.row] as? Subtask,
+              let parentTask = replacedSubtask.task else { return }
+        parentTask.removeFromSubtasks(at: sourceIndexPath.row)
+        parentTask.insertIntoSubtasks(replacedSubtask, at: destinationIndexPath.row)
+        delegate?.reorderingFinished()
     }
 }
 
 extension SubtaskTableViewDataSource: UITableViewDragDelegate {
     func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        guard let subtasks = subtasks else { return [] }
         let dragItem = UIDragItem(itemProvider: NSItemProvider())
-        dragItem.localObject = items[indexPath.row]
+        dragItem.localObject = subtasks[indexPath.row]
         return [dragItem]
     }
 }

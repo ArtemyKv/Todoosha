@@ -16,7 +16,7 @@ class AddTaskBottomSheetViewController: UIViewController {
     
     //MARK: Properties
     
-    var task: Task?
+    var coreDataStack: CoreDataStack!
     
     weak var delegate: AddTaskBottomSheetDelegate?
     
@@ -426,12 +426,13 @@ class AddTaskBottomSheetViewController: UIViewController {
     }
     
     @objc func createButtonTapped() {
-        task = Task(name: nameTextField.text!)
-        task?.creationDate = Date()
-        task?.dueDate = dueButton.isSelected ? dueDatePicker.date : nil
-        task?.remindDate = remindButton.isSelected ? reminderDatePicker.date : nil
-        task?.myDay = myDayButton.isSelected
-        delegate?.saveTask(task!)
+        let task = Task(context: coreDataStack.managedContext)
+        task.name = nameTextField.text
+        task.creationDate = Date()
+        task.dueDate = dueButton.isSelected ? dueDatePicker.date : nil
+        task.remindDate = remindButton.isSelected ? reminderDatePicker.date : nil
+        task.myDay = myDayButton.isSelected
+        delegate?.saveTask(task)
         nameTextField.resignFirstResponder()
         animateDismiss()
     }
