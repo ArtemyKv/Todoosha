@@ -332,6 +332,25 @@ class HomeViewController: UIViewController {
                     return cell
             }
         })
+        
+        dataSource.sectionSnapshotHandlers.willCollapseItem = { groupItem in
+            switch groupItem {
+                case .group(let group):
+                    group.isExpanded = false
+                    self.coreDataStack.saveContext()
+                default: break
+            }
+        }
+        
+        dataSource.sectionSnapshotHandlers.willExpandItem = { groupItem in
+            switch groupItem {
+                case .group(let group):
+                    group.isExpanded = true
+                    self.coreDataStack.saveContext()
+                default: break
+            }
+        }
+        
         //========================================РАЗОБРАТЬСЯ!!!!
         //Handle reordering items
         dataSource.reorderingHandlers.canReorderItem = {list in
@@ -404,20 +423,7 @@ extension HomeViewController: UICollectionViewDelegate {
                 return
         }
     }
-    
-    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
-        let item = dataSource.itemIdentifier(for: indexPath)
-        
-        switch item {
-            case .group(let group):
-                group.isExpanded.toggle()
-                coreDataStack.saveContext()
-            default:
-                return
-        }
-     
-    }
-     
+
     //========================================РАЗОБРАТЬСЯ!!!!
 
     func collectionView(_ collectionView: UICollectionView, targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath, atCurrentIndexPath currentIndexPath: IndexPath, toProposedIndexPath proposedIndexPath: IndexPath) -> IndexPath {
