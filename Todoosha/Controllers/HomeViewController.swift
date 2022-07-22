@@ -290,7 +290,8 @@ class HomeViewController: UIViewController {
                 customView: groupOptionsButton,
                 placement: .trailing(displayed: .always, at: { accessories in
                 return 0
-            })
+            }),
+                reservedLayoutWidth: .custom(50)
             )
             
             //Disclosure accessory
