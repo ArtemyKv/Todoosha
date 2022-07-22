@@ -242,14 +242,62 @@ class HomeViewController: UIViewController {
     
     func createGroupCellRegistration() -> UICollectionView.CellRegistration<UICollectionViewListCell, Group> {
         let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Group> { (cell, indexPath, groupItem) in
-            
             var content = cell.defaultContentConfiguration()
             content.text = groupItem.name
             content.image = UIImage(systemName: "folder")
             cell.contentConfiguration = content
             
+            //Creating cell accessories
+            
+            //Options button
+            var buttonConfiguration = UIButton.Configuration.borderless()
+            buttonConfiguration.image = UIImage(systemName: "ellipsis", withConfiguration: UIImage.SymbolConfiguration(scale: .small))
+            let groupOptionsButton = UIButton(configuration: buttonConfiguration)
+            groupOptionsButton.showsMenuAsPrimaryAction = true
+            
+            //Button menu actions
+            let newGroupAction = UIAction(title: "Add new list to group", image: UIImage(systemName: "plus.square"), state: .off) { action in
+                let list = List(context: self.coreDataStack.managedContext)
+                list.group = groupItem
+                list.name = "New list"
+                self.coreDataStack.saveContext()
+                self.applySnapshots()
+            }
+            
+            let renameGroupAction = UIAction(title: "Rename Group", image: UIImage(systemName: "text.cursor")) { action in
+                self.presentGroupAlert(isAddingGroup: false, currentGroup: groupItem, currentGroupCellIndexPath: indexPath)
+            }
+            
+            let ungroupListsAction = UIAction(title: "Ungroup lists", image: UIImage(systemName: "folder.badge.minus")) { action in
+                if let groupItemIndex = self.groups.firstIndex(of: groupItem) {
+                    self.groups.remove(at: groupItemIndex)
+                }
+                self.coreDataStack.managedContext.delete(groupItem)
+                
+                if let groupLists = groupItem.lists?.array as? [List] {
+                    for list in groupLists {
+                        list.order = Int32(self.ungroupedLists.count)
+                        self.ungroupedLists.append(list)
+                    }
+                }
+                self.applySnapshots()
+            }
+            
+            //Button menu
+            groupOptionsButton.menu = UIMenu(children: [renameGroupAction, newGroupAction, ungroupListsAction])
+            
+            let customAccessoryConfig = UICellAccessory.CustomViewConfiguration(
+                customView: groupOptionsButton,
+                placement: .trailing(displayed: .always, at: { accessories in
+                return 0
+            })
+            )
+            
+            //Disclosure accessory
             let disclosureOptions = UICellAccessory.OutlineDisclosureOptions(style: .header)
-            cell.accessories = [.outlineDisclosure(options: disclosureOptions)]
+            
+            //Adding accessories to cell
+            cell.accessories = [.customView(configuration: customAccessoryConfig),.outlineDisclosure(options: disclosureOptions),]
         }
         
         return cellRegistration
@@ -398,9 +446,17 @@ extension HomeViewController {
     }
     
     @objc func addGroupButtonTapped() {
-        let alert = UIAlertController(title: "New Group", message: nil, preferredStyle: .alert)
+       presentGroupAlert(isAddingGroup: true)
+    }
+    
+    func presentGroupAlert(isAddingGroup: Bool, currentGroup: Group? = nil, currentGroupCellIndexPath: IndexPath? = nil) {
+        
+        let title = isAddingGroup ? "New Group" : "Rename Group"
+        let textFieldText =  currentGroup?.name ?? "New Group"
+        
+        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
         alert.addTextField { textField in
-            textField.text = "New Group"
+            textField.text = textFieldText
             textField.placeholder = "Group Name"
             textField.textAlignment = .left
         }
@@ -416,17 +472,33 @@ extension HomeViewController {
             self.applySnapshots()
         }
         
+        let renameAction = UIAlertAction(title: "Rename", style: .default) { action in
+            guard let currentGroup = currentGroup,
+                  let currentGroupCellIndexPath = currentGroupCellIndexPath,
+                  let groupItem = self.dataSource.itemIdentifier(for: currentGroupCellIndexPath) else { return }
+
+            let groupName = alert.textFields![0].text!
+            currentGroup.name = groupName
+            
+            self.coreDataStack.saveContext()
+            var snapshot = self.dataSource.snapshot()
+            snapshot.reloadItems([groupItem])
+            self.dataSource.apply(snapshot)
+        }
+        
         NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: alert.textFields?[0], queue: OperationQueue.main) { _ in
             let textField = alert.textFields![0]
             createAction.isEnabled = !textField.text!.isEmpty
+            renameAction.isEnabled = !textField.text!.isEmpty
         }
         NotificationCenter.default.addObserver(forName: UITextField.textDidBeginEditingNotification, object: alert.textFields?[0], queue: OperationQueue.main) { _ in
             let textField = alert.textFields![0]
             createAction.isEnabled = !textField.text!.isEmpty
+            renameAction.isEnabled = !textField.text!.isEmpty
         }
         
         alert.addAction(cancelAction)
-        alert.addAction(createAction)
+        alert.addAction(isAddingGroup ? createAction : renameAction)
         self.present(alert, animated: true)
     }
 }
