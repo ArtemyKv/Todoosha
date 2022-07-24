@@ -41,10 +41,15 @@ class TaskTableViewController: UITableViewController {
     
     
     //Dates section
-    
     @IBOutlet weak var myDayLabel: UILabel!
     @IBOutlet weak var remindDateLabel: UILabel!
     @IBOutlet weak var dueDateLabel: UILabel!
+    @IBOutlet weak var reminderDatePicker: UIDatePicker!
+    @IBOutlet weak var dueDatePicker: UIDatePicker!
+    @IBOutlet weak var deleteRemindDateButton: UIButton!
+    @IBOutlet weak var deleteDueDateButton: UIButton!
+    
+    
     
     //Notes section
     @IBOutlet weak var notesTextView: UITextView!
@@ -58,10 +63,17 @@ class TaskTableViewController: UITableViewController {
     let nameCellIndexPath = IndexPath(row: 0, section: 0)
     let subtaskTableViewIndexPath = IndexPath(row: 0, section: 1)
     let myDayCellIndexPath = IndexPath(row: 0, section: 2)
-    let remindMeCellIndexpath = IndexPath(row: 1, section: 2)
-    let dueDateIndexPath = IndexPath(row: 2, section: 2)
+    let remindMeCellIndexPath = IndexPath(row: 1, section: 2)
+    let remindDatePickerIndexPath = IndexPath(row: 2, section: 2)
+    let dueDateCellIndexPath = IndexPath(row: 3, section: 2)
+    let dueDatePickerIndexPath = IndexPath(row: 4, section: 2)
     let addFilesIndexPath = IndexPath(row: 0, section: 3)
     let notesIndexPath = IndexPath(row: 0, section: 4)
+    
+    //MARK: Properties:
+    
+    var remindDatePickerIsHidden: Bool = true
+    var dueDatePickerIsHidden: Bool = true
     
     
     //MARK: ViewDidLoad
@@ -116,13 +128,24 @@ class TaskTableViewController: UITableViewController {
     }
     
     //Date section
-    func myDayButtonTapped() {
-        task.myDay.toggle()
+    @IBAction func deleteRemindDateButtonPressed(_ sender: UIButton) {
+        task.remindDate = nil
         updateView()
     }
     
-    func reminderCellTapped() {
-        
+    @IBAction func deleteDueDateButtonPressed(_ sender: UIButton) {
+        task.dueDate = nil
+        updateView()
+    }
+    
+    @IBAction func reminderDatePickerValueChanged(_ sender: UIDatePicker) {
+        task.remindDate = sender.date
+        updateView()
+    }
+    
+    @IBAction func dueDatePickerValueChanged(_ sender: UIDatePicker) {
+        task.dueDate = sender.date
+        updateView()
     }
     
     //Subtasks section
@@ -152,6 +175,20 @@ class TaskTableViewController: UITableViewController {
         switch indexPath {
             case myDayCellIndexPath:
                 myDayButtonPressed()
+            case remindMeCellIndexPath:
+                remindDatePickerIsHidden.toggle()
+                if !dueDatePickerIsHidden {
+                    dueDatePickerIsHidden = true
+                }
+                tableView.beginUpdates()
+                tableView.endUpdates()
+            case dueDateCellIndexPath:
+                dueDatePickerIsHidden.toggle()
+                if !remindDatePickerIsHidden {
+                    remindDatePickerIsHidden = true
+                }
+                tableView.beginUpdates()
+                tableView.endUpdates()
             default:
                 break
         }
@@ -168,8 +205,21 @@ class TaskTableViewController: UITableViewController {
                 return 200
             case nameCellIndexPath:
                 return UITableView.automaticDimension
+            case remindDatePickerIndexPath:
+                return remindDatePickerIsHidden ? 0 : 216
+            case dueDatePickerIndexPath:
+                return dueDatePickerIsHidden ? 0 : 216
             default:
                 return defaultHeight
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        switch indexPath {
+            case dueDatePickerIndexPath, remindDatePickerIndexPath:
+                return 216
+            default:
+                return 44
         }
     }
     
@@ -180,12 +230,14 @@ class TaskTableViewController: UITableViewController {
     func updateView() {
         nameTextView.text = task.name
         myDayLabel.text = task.myDay ? "Remove from My Day" : "Add to My Day"
-        remindDateLabel.text = task.remindDate?.formatted(date: .abbreviated, time: .omitted)
-        dueDateLabel.text = task.dueDate?.formatted(date: .abbreviated, time: .omitted)
+        remindDateLabel.text = task.remindDate?.formatted(date: .numeric, time: .shortened)
+        dueDateLabel.text = task.dueDate?.formatted(date: .numeric, time: .shortened)
         isCompleteButton.isSelected = task.isComplete
         isImportantButton.isSelected = task.isImportant
         notesTextView.text = task.notes
         
+        deleteRemindDateButton.isHidden = remindDateLabel.text == nil
+        deleteDueDateButton.isHidden = dueDateLabel.text == nil
         coreDataStack.saveContext()
         
         

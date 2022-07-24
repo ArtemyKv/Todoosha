@@ -142,7 +142,7 @@
                             </tableViewSection>
                             <tableViewSection headerTitle="Dates" id="4Nb-m3-T3P">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="44" id="FnP-xT-QRX">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="My Day Cell" rowHeight="44" id="FnP-xT-QRX">
                                         <rect key="frame" x="0.0" y="310.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="FnP-xT-QRX" id="IsK-RK-N8v">
@@ -174,7 +174,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="44" id="7km-mA-wh4">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="Reminder Cell" rowHeight="44" id="7km-mA-wh4">
                                         <rect key="frame" x="0.0" y="354.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="7km-mA-wh4" id="gcU-P9-MWi">
@@ -190,17 +190,27 @@
                                                             <state key="normal" image="clock" catalog="system"/>
                                                         </button>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="Remind me" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Svk-xT-JJF">
-                                                            <rect key="frame" x="29" y="0.0" width="201" height="44"/>
+                                                            <rect key="frame" x="29" y="0.0" width="181" height="44"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Remind date label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EKH-cw-HZj">
-                                                            <rect key="frame" x="238" y="0.0" width="136" height="44"/>
+                                                            <rect key="frame" x="218" y="0.0" width="136" height="44"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
+                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8N-B5-YcD">
+                                                            <rect key="frame" x="362" y="0.0" width="12" height="44"/>
+                                                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                            <state key="normal">
+                                                                <imageReference key="image" image="xmark" catalog="system" symbolScale="small"/>
+                                                            </state>
+                                                            <connections>
+                                                                <action selector="deleteRemindDateButtonPressed:" destination="T2P-bo-s91" eventType="touchUpInside" id="uBc-J6-t3A"/>
+                                                            </connections>
+                                                        </button>
                                                     </subviews>
                                                 </stackView>
                                             </subviews>
@@ -212,8 +222,30 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="44" id="oCt-Ze-xNe">
-                                        <rect key="frame" x="0.0" y="398.5" width="414" height="44"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="216" id="ZnV-ew-lrx">
+                                        <rect key="frame" x="0.0" y="398.5" width="414" height="216"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ZnV-ew-lrx" id="Tx8-MW-nYx">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="216"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" style="wheels" translatesAutoresizingMaskIntoConstraints="NO" id="6dL-SQ-bFk">
+                                                    <rect key="frame" x="0.0" y="0.0" width="414" height="216"/>
+                                                    <connections>
+                                                        <action selector="reminderDatePickerValueChanged:" destination="T2P-bo-s91" eventType="valueChanged" id="V7z-OJ-nQK"/>
+                                                    </connections>
+                                                </datePicker>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="bottom" secondItem="6dL-SQ-bFk" secondAttribute="bottom" id="1eX-1n-LDS"/>
+                                                <constraint firstItem="6dL-SQ-bFk" firstAttribute="leading" secondItem="Tx8-MW-nYx" secondAttribute="leading" id="ADD-jh-ty1"/>
+                                                <constraint firstAttribute="trailing" secondItem="6dL-SQ-bFk" secondAttribute="trailing" id="kV1-mZ-WfK"/>
+                                                <constraint firstItem="6dL-SQ-bFk" firstAttribute="top" secondItem="Tx8-MW-nYx" secondAttribute="top" id="v8T-fa-ZDM"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="Due Date Cell" rowHeight="44" id="oCt-Ze-xNe">
+                                        <rect key="frame" x="0.0" y="614.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oCt-Ze-xNe" id="dc7-1S-S1P">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
@@ -228,17 +260,27 @@
                                                             <state key="normal" image="calendar" catalog="system"/>
                                                         </button>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="Due date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0b6-cr-YWN">
-                                                            <rect key="frame" x="31" y="0.0" width="223.5" height="44"/>
+                                                            <rect key="frame" x="31" y="0.0" width="203.5" height="44"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Due Date label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Br5-Uy-WiY">
-                                                            <rect key="frame" x="262.5" y="0.0" width="111.5" height="44"/>
+                                                            <rect key="frame" x="242.5" y="0.0" width="111.5" height="44"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
+                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RS0-FC-Faj">
+                                                            <rect key="frame" x="362" y="0.0" width="12" height="44"/>
+                                                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                            <state key="normal">
+                                                                <imageReference key="image" image="xmark" catalog="system" symbolScale="small"/>
+                                                            </state>
+                                                            <connections>
+                                                                <action selector="DeleteDueDateButtnPressed:" destination="T2P-bo-s91" eventType="touchUpInside" id="CPx-4u-bdB"/>
+                                                            </connections>
+                                                        </button>
                                                     </subviews>
                                                 </stackView>
                                             </subviews>
@@ -250,26 +292,48 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="216" id="R1g-yf-K3q">
+                                        <rect key="frame" x="0.0" y="658.5" width="414" height="216"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="R1g-yf-K3q" id="mo9-cQ-omZ">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="216"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="1" style="wheels" translatesAutoresizingMaskIntoConstraints="NO" id="kH1-k3-4eK">
+                                                    <rect key="frame" x="0.0" y="0.0" width="414" height="216"/>
+                                                    <connections>
+                                                        <action selector="dueDatePickerValueChanged:" destination="T2P-bo-s91" eventType="valueChanged" id="ReM-Vk-tw1"/>
+                                                    </connections>
+                                                </datePicker>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="kH1-k3-4eK" secondAttribute="trailing" id="9OE-O7-2sl"/>
+                                                <constraint firstItem="kH1-k3-4eK" firstAttribute="top" secondItem="mo9-cQ-omZ" secondAttribute="top" id="HS6-mH-Fmd"/>
+                                                <constraint firstItem="kH1-k3-4eK" firstAttribute="leading" secondItem="mo9-cQ-omZ" secondAttribute="leading" id="P6J-0e-H6H"/>
+                                                <constraint firstAttribute="bottom" secondItem="kH1-k3-4eK" secondAttribute="bottom" id="io3-Wc-7SP"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                             <tableViewSection headerTitle="Attachements" id="UGF-6I-8HV">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="44" id="tdt-ub-IEp">
-                                        <rect key="frame" x="0.0" y="509.5" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="941.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="tdt-ub-IEp" id="ckZ-bv-h3f">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-rg-bvT">
+                                                <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-rg-bvT">
                                                     <rect key="frame" x="20" y="0.0" width="374" height="44"/>
                                                     <subviews>
-                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nn8-XN-KGW">
+                                                        <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nn8-XN-KGW">
                                                             <rect key="frame" x="0.0" y="0.0" width="21" height="44"/>
                                                             <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                             <state key="normal" image="paperclip" catalog="system"/>
                                                         </button>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="Add files" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cb1-H7-wvt">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" ambiguous="YES" text="Add files" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cb1-H7-wvt">
                                                             <rect key="frame" x="29" y="0.0" width="345" height="44"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
@@ -279,10 +343,10 @@
                                                 </stackView>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstAttribute="trailingMargin" secondItem="fFz-rg-bvT" secondAttribute="trailing" id="CQF-7q-b1Z"/>
-                                                <constraint firstAttribute="bottom" secondItem="fFz-rg-bvT" secondAttribute="bottom" id="ENi-q6-JSZ"/>
-                                                <constraint firstItem="fFz-rg-bvT" firstAttribute="leading" secondItem="ckZ-bv-h3f" secondAttribute="leadingMargin" id="dZC-IS-hTU"/>
-                                                <constraint firstItem="fFz-rg-bvT" firstAttribute="top" secondItem="ckZ-bv-h3f" secondAttribute="top" id="ub6-Ls-5Qc"/>
+                                                <constraint firstItem="fFz-rg-bvT" firstAttribute="leading" secondItem="ckZ-bv-h3f" secondAttribute="leadingMargin" id="ZUd-4e-kU1"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="fFz-rg-bvT" secondAttribute="trailing" id="bGD-6s-d9U"/>
+                                                <constraint firstItem="fFz-rg-bvT" firstAttribute="top" secondItem="ckZ-bv-h3f" secondAttribute="top" id="gQp-xq-EnE"/>
+                                                <constraint firstAttribute="bottom" secondItem="fFz-rg-bvT" secondAttribute="bottom" id="qBi-XE-d7a"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -291,13 +355,13 @@
                             <tableViewSection headerTitle="Notes" id="IMz-Xm-bVE">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="44" id="AZH-rU-7d4">
-                                        <rect key="frame" x="0.0" y="620.5" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="1052.5" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="AZH-rU-7d4" id="ouC-gd-BBZ">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="VEO-eo-6cF">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="VEO-eo-6cF">
                                                     <rect key="frame" x="20" y="0.0" width="374" height="44"/>
                                                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                     <color key="textColor" systemColor="labelColor"/>
@@ -347,14 +411,18 @@
                     <connections>
                         <outlet property="cancelButton" destination="AVs-eL-p7l" id="FMd-0c-DT8"/>
                         <outlet property="creationDateButton" destination="kFE-yO-cin" id="euX-y3-RS7"/>
+                        <outlet property="deleteDueDateButton" destination="RS0-FC-Faj" id="gf3-Ms-eHo"/>
+                        <outlet property="deleteRemindDateButton" destination="b8N-B5-YcD" id="hor-lc-CXd"/>
                         <outlet property="deleteTaskButton" destination="FCP-cZ-UgS" id="mqc-cR-2Y3"/>
                         <outlet property="dueDateLabel" destination="Br5-Uy-WiY" id="OH2-Dj-tVk"/>
+                        <outlet property="dueDatePicker" destination="kH1-k3-4eK" id="1ux-cK-vaH"/>
                         <outlet property="isCompleteButton" destination="csj-kL-QcI" id="5Pz-eq-cIR"/>
                         <outlet property="isImportantButton" destination="Y1d-k7-xXm" id="YS0-1f-xHP"/>
                         <outlet property="myDayLabel" destination="l1M-Mb-G1N" id="Dox-Pt-ZWd"/>
                         <outlet property="nameTextView" destination="I4H-Fc-YIk" id="WHf-6H-erY"/>
                         <outlet property="notesTextView" destination="VEO-eo-6cF" id="wUN-Eo-CcO"/>
                         <outlet property="remindDateLabel" destination="EKH-cw-HZj" id="jrM-Kn-Oui"/>
+                        <outlet property="reminderDatePicker" destination="6dL-SQ-bFk" id="mUd-F7-6x5"/>
                         <outlet property="shareButton" destination="85X-Se-4VB" id="XhS-ZV-34m"/>
                         <outlet property="subtaskTextField" destination="70t-gK-Ncp" id="bAD-wi-A4d"/>
                         <outlet property="subtasksTableView" destination="YKp-uC-vHf" id="BbK-sX-afG"/>
@@ -399,6 +467,7 @@
         <image name="star.fill" catalog="system" width="128" height="116"/>
         <image name="sun.max" catalog="system" width="128" height="124"/>
         <image name="trash" catalog="system" width="121" height="128"/>
+        <image name="xmark" catalog="system" width="128" height="113"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
