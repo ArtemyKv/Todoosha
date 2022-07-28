@@ -162,6 +162,11 @@ class HomeViewController: UIViewController {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
         collectionView.delegate = self
         
+        //setting up gesture recognizer for reordering items
+        let longPressGestureRecogniser = UILongPressGestureRecognizer(target: self, action: #selector(handleLongGesture(gesture:)))
+        collectionView.addGestureRecognizer(longPressGestureRecogniser)
+        
+        
     }
     
     //MARK: Setup swipe delete action for list rows
@@ -173,9 +178,9 @@ class HomeViewController: UIViewController {
             
             let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { action, view, completion in
     //MARK: Try to refactor! This code is not good!
-                switch indexPath.section {
+                switch section {
                     //If section is groupedLists
-                    case 1:
+                    case .groupedLists:
                         //Get group item from section snapshot by searching for parent item of our listItem
                         let sectionSnapshot = self.dataSource.snapshot(for: .groupedLists)
                         let groupItem = sectionSnapshot.parent(of: listItem!)
@@ -188,7 +193,7 @@ class HomeViewController: UIViewController {
                                 break
                         }
                     //If section is ungroupedLists - simply delete list from data base
-                    case 2:
+                    case .ungroupedLists:
                         let list = self.ungroupedLists.remove(at: indexPath.row)
                         self.coreDataStack.managedContext.delete(list)
                     default:
@@ -298,7 +303,7 @@ class HomeViewController: UIViewController {
             let disclosureOptions = UICellAccessory.OutlineDisclosureOptions(style: .header)
             
             //Adding accessories to cell
-            cell.accessories = [.customView(configuration: customAccessoryConfig),.outlineDisclosure(options: disclosureOptions),]
+            cell.accessories = [.customView(configuration: customAccessoryConfig),.outlineDisclosure(options: disclosureOptions)]
         }
         
         return cellRegistration
@@ -352,10 +357,9 @@ class HomeViewController: UIViewController {
             }
         }
         
-        //========================================РАЗОБРАТЬСЯ!!!!
         //Handle reordering items
-        dataSource.reorderingHandlers.canReorderItem = {list in
-            let itemIndexPath = self.dataSource.indexPath(for: list)!
+        dataSource.reorderingHandlers.canReorderItem = { item in
+            let itemIndexPath = self.dataSource.indexPath(for: item)!
             //Disable reordering for basic lists
             if itemIndexPath.section == 0 {
                 return false
@@ -363,10 +367,97 @@ class HomeViewController: UIViewController {
             return true
         }
         
-        dataSource.reorderingHandlers.didReorder = {[weak self] transaction in
-            //guard let self = self else {return}
+        dataSource.reorderingHandlers.willReorder = { [weak self] transaction in
+            guard let self = self else { return }
+            //Access to Difference.Change element
+            let element = transaction.difference.removals.first
+            
+            //Access to associated ListItem in Difference.Change element
+            switch element {
+                case .remove(offset: _, element: let item, associatedWith: _):
+                    //Access to associated list or group and handling remove from original backing store
+                    switch item {
+                        //If item is List then remove it from parent group if it has one or remove from ungroupedLists
+                        case .list(let list):
+                            if let group = list.group {
+                                group.removeFromLists(list)
+                            } else if let ungroupedListsIndex = self.ungroupedLists.firstIndex(of: list) {
+                                self.ungroupedLists.remove(at: ungroupedListsIndex)
+                            }
+                        //If item is Group then remove it from groups array
+                        case .group(let group):
+                            if let groupsIndex = self.groups.firstIndex(of: group) {
+                                self.groups.remove(at: groupsIndex)
+                            }
+                        case .basic:
+                            break
+                    }
+                default:
+                    break
+            }
         }
-         
+                
+        dataSource.reorderingHandlers.didReorder = { [weak self] transaction in
+            guard let self = self else { return }
+            //Access to Difference.Change element
+            let element = transaction.difference.insertions.first
+            //Access to associated ListItem in Difference.Change element
+            switch element {
+                case .insert(offset: _, element: let item, associatedWith: _):
+                    //Access to indexPath of target position, indexPath of item above target position, access to item above and target section
+                    guard let proposedIndexPath = self.dataSource.indexPath(for: item) else { return }
+                    let beforeProposedIndexPath = IndexPath(row: proposedIndexPath.row - 1, section: proposedIndexPath.section)
+                    let itemBeforeProposed = self.dataSource.itemIdentifier(for: beforeProposedIndexPath)
+                    let proposedSection = self.dataSource.sectionIdentifier(for: proposedIndexPath.section)
+                    
+                    //Switching reordable item type, item above target position and section to update model
+                    switch (item, itemBeforeProposed, proposedSection) {
+                        //Item is List cases:
+                            //target section is ungroupedLists, we need to insert item to ungroupedLists array and update order property
+                        case (.list(let list), _, .ungroupedLists):
+                            self.ungroupedLists.insert(list, at: proposedIndexPath.row)
+                            for i in 0..<self.ungroupedLists.count {
+                                self.ungroupedLists[i].order = Int32(i)
+                            }
+                            //item above is list, section is groupedLists, we need to get access to group in propery of list above and insert our list at index
+                        case (.list(let list), .list(let listBefore), .groupedLists):
+                            guard let proposedGroup = listBefore.group, let proposedIndexInGroupLists = proposedGroup.lists?.index(of: listBefore) else { return }
+                            proposedGroup.insertIntoLists(list, at: proposedIndexInGroupLists + 1)
+                            //item above is group, section is groupedLists, we need to insert our list at first position of lists
+                        case (.list(let list), .group(let proposedGroup), .groupedLists):
+                            proposedGroup.insertIntoLists(list, at: 0)
+                            
+                        //Item is Group cases:
+                            //item above is group, we need to get target index in groups and insert item in groups array at that index. After that update order property of groups
+                        case (.group(let group), .group(let groupBefore), .groupedLists):
+                            guard let indexOfGroupBefore = self.groups.firstIndex(of: groupBefore) else { return }
+                            //Add +1 to index of group before because we need to insert after that group
+                            self.groups.insert(group, at: indexOfGroupBefore + 1)
+                            self.numerateGroupsByOrder()
+                            //item above is list, we need to get group from its property and get this group index. Insert item in groups at that index and update order
+                        case (.group(let group), .list(let list), .groupedLists):
+                            guard let groupBefore = list.group, let indexOfGroupBefore = self.groups.firstIndex(of: groupBefore) else { return }
+                            //Add +1 to index of group before because we need to insert after that group
+                            self.groups.insert(group, at: indexOfGroupBefore + 1)
+                            self.numerateGroupsByOrder()
+                            //item above is nil(our group supposed to be the first in group list). We need to insert it in groups array at index 0 and update order
+                        case (.group(let group), nil, .groupedLists):
+                            self.groups.insert(group, at: 0)
+                            self.numerateGroupsByOrder()
+                        default:
+                            break
+                    }
+                default:
+                    break
+            }
+            self.coreDataStack.saveContext()
+        }
+    }
+    
+    func numerateGroupsByOrder() {
+        for i in 0..<groups.count {
+            groups[i].order = Int32(i)
+        }
     }
   
     func applySnapshots() {
@@ -425,11 +516,47 @@ extension HomeViewController: UICollectionViewDelegate {
         }
     }
 
-    //========================================РАЗОБРАТЬСЯ!!!!
-
     func collectionView(_ collectionView: UICollectionView, targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath, atCurrentIndexPath currentIndexPath: IndexPath, toProposedIndexPath proposedIndexPath: IndexPath) -> IndexPath {
-        print("target")
-        return proposedIndexPath
+        
+        let isBackwardReordering: Bool = originalIndexPath > proposedIndexPath
+        let originalItem = dataSource.itemIdentifier(for: originalIndexPath)
+        
+        let itemBeforeProposedIndexPath = IndexPath(
+            row: isBackwardReordering ? proposedIndexPath.row - 1 : proposedIndexPath.row,
+            section: proposedIndexPath.section
+        )
+        let itemBeforeProposed = dataSource.itemIdentifier(for: itemBeforeProposedIndexPath)
+        
+        switch (originalItem, itemBeforeProposed) {
+            case (.group, .list(let list)):
+                if let targetGroup = list.group, list == targetGroup.lists?.lastObject as! List {
+                    return proposedIndexPath
+                } else {
+                    return originalIndexPath
+                }
+            case (.list, .list):
+                return proposedIndexPath
+            case(.group, .group):
+                let sectionSnapshot = dataSource.snapshot(for: .groupedLists)
+                if sectionSnapshot.isExpanded(itemBeforeProposed!) {
+                    return originalIndexPath
+                } else {
+                    return proposedIndexPath
+                }
+            case (.list, .group):
+                let sectionSnapshot = dataSource.snapshot(for: .groupedLists)
+                if sectionSnapshot.isExpanded(itemBeforeProposed!) {
+                    return proposedIndexPath
+                } else {
+                    return originalIndexPath
+                }
+            case (.group, nil) where dataSource.sectionIdentifier(for: proposedIndexPath.section) == .groupedLists:
+                return proposedIndexPath
+            case (.list, nil) where dataSource.sectionIdentifier(for: proposedIndexPath.section) == .ungroupedLists:
+                return proposedIndexPath
+            default:
+                return originalIndexPath
+        }
     }
     
 }
@@ -507,6 +634,28 @@ extension HomeViewController {
         alert.addAction(cancelAction)
         alert.addAction(isAddingGroup ? createAction : renameAction)
         self.present(alert, animated: true)
+    }
+}
+
+//MARK: Setting up gesture for reordering
+extension HomeViewController {
+    @objc func handleLongGesture(gesture: UILongPressGestureRecognizer) {
+        switch gesture.state {
+            case UIGestureRecognizer.State.began:
+                guard let selectedIndexPath = self.collectionView.indexPathForItem(at: gesture.location(in: self.collectionView)) else { break }
+                collectionView.beginInteractiveMovementForItem(at: selectedIndexPath)
+            case UIGestureRecognizer.State.changed:
+                collectionView.updateInteractiveMovementTargetPosition(gesture.location(in: gesture.view!))
+            case UIGestureRecognizer.State.ended:
+                collectionView.endInteractiveMovement()
+                applySnapshots()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.collectionView.reloadData()
+                }
+            default:
+                collectionView.cancelInteractiveMovement()
+        }
     }
 }
 
